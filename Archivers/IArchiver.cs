@@ -2,8 +2,7 @@
 {
     public interface IArchiver
     {
-        void CompressFile(string filename, string fileOutName, out string filePath);
-
-        void DecompressFile(string filename, string fileOutName, out string filePath);
+        byte[] Compress(string input);
+        string Decompress(byte[] input);
     }
 }

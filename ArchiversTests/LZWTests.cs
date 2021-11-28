@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Archivers;
+using Archivers.Huffman;
+using Archivers.Huffman2;
 using NUnit.Framework;
 
 namespace ArchiversTests
@@ -10,43 +12,40 @@ namespace ArchiversTests
     public class LZWTests
     {
         private IArchiver archiever;
+        private IFileArchiver fileArchiver;
+        private string originalDirPath;
+        private string compressedDirPath;
+        private string decompressedDirPath;
 
         [SetUp]
         public void Setup()
         {
-            archiever = new LZWArchiever();
+            archiever = new LZW();
+            fileArchiver = new FileArchiver(archiever);
+            originalDirPath = "../../../Texts/Originals/";
+            compressedDirPath = "../../../Texts/Compressed/";
+            decompressedDirPath = "../../../Texts/Decompressed/";
         }
 
-        [Test]
-        public void SmallText()
+        [TestCase("small.txt")]
+        [TestCase("medium.txt")]
+        [TestCase("big.txt")]
+        [TestCase("huge.txt")]
+        public void RunTest(string fileName)
         {
-            var original = "../../../Texts/small.txt";
-            archiever.CompressFile(original, "../../../Texts/smallC.txt", out var path);
-            archiever.DecompressFile(path, "../../../Texts/smallD.txt", out var dpath);
-            var areEquals = File.ReadLines(original)
-                .SequenceEqual(File.ReadLines(dpath));
-            Assert.IsTrue(areEquals);
+            var originalPath = originalDirPath + fileName;
+            var compressedPath = compressedDirPath + fileName;
+            var decompressedPath = decompressedDirPath + fileName;
+            OriginalAndDecompressedAreEquail(originalPath, compressedPath, decompressedPath);
         }
 
-        [Test]
-        public void MediumText()
+        private void OriginalAndDecompressedAreEquail(string originalPath, string compressedPath,
+            string decompressedPath)
         {
-            var original = "../../../Texts/medium.txt";
-            archiever.CompressFile(original, "../../../Texts/mediumC.txt", out var path);
-            archiever.DecompressFile(path, "../../../Texts/mediumD.txt", out var dpath);
-            var areEquals = File.ReadLines(original)
-                .SequenceEqual(File.ReadLines(dpath));
-            Assert.IsTrue(areEquals);
-        }
-
-        [Test]
-        public void BigText()
-        {
-            var original = "../../../Texts/big.txt";
-            archiever.CompressFile(original, "../../../Texts/bigC.txt", out var path);
-            archiever.DecompressFile(path, "../../../Texts/bigD.txt", out var dpath);
-            var areEquals = File.ReadLines(original)
-                .SequenceEqual(File.ReadLines(dpath));
+            fileArchiver.CompressFile(originalPath, compressedPath);
+            fileArchiver.DecompressFile(compressedPath, decompressedPath);
+            var areEquals = File.ReadLines(originalPath)
+                .SequenceEqual(File.ReadLines(decompressedPath));
             Assert.IsTrue(areEquals);
         }
     }

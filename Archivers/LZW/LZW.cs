@@ -7,18 +7,18 @@ using System.Text;
 
 namespace Archivers
 {
-    public class LZWArchiever : IArchiver
+    public class LZW : IArchiver
     {
-        public string Compress(string uncompressed)
+        public byte[] Compress(string input)
         {
-            if (uncompressed.Length == 0)
-                return string.Empty;
+            if (input.Length == 0)
+                return Array.Empty<byte>();
             var dictionary = GetInitialDictionaryBySymbol();
 
             var current = string.Empty;
             var compressed = new List<int>();
 
-            foreach (var ch in uncompressed)
+            foreach (var ch in input)
             {
                 var workingString = current + ch;
                 if (dictionary.ContainsKey(workingString))
@@ -34,18 +34,17 @@ namespace Archivers
             // write remaining output if necessary
             if (!string.IsNullOrEmpty(current))
                 compressed.Add(dictionary[current]);
-
-            return string.Join(',', compressed);
+            var result = compressed.SelectMany(BitConverter.GetBytes).ToArray();
+            return result;
         }
 
-        public string Decompress(string compressed)
+        public string Decompress(byte[] compressed)
         {
             if (compressed.Length == 0)
                 return string.Empty;
 
+            var indexes = GetIndexies(compressed);
             var dict = GetInitialDictionaryByIndex();
-
-            var indexes = compressed.Split(',').Select(ch => int.Parse(ch)).ToList();
 
             var workingString = dict[indexes[0]];
             indexes.RemoveAt(0);
@@ -71,6 +70,23 @@ namespace Archivers
             return decompressed.ToString();
         }
 
+        private static List<int> GetIndexies(byte[] compressed)
+        {
+            var indexes = new List<int>();
+            var buffer = new List<byte>();
+            foreach (var b in compressed)
+            {
+                buffer.Add(b);
+                if (buffer.Count == 4)
+                {
+                    indexes.Add(BitConverter.ToInt32(buffer.ToArray(), 0));
+                    buffer.Clear();
+                }
+            }
+
+            return indexes;
+        }
+
         private static Dictionary<string, int> GetInitialDictionaryBySymbol()
         {
             var dict = new Dictionary<string, int>();
@@ -85,47 +101,6 @@ namespace Archivers
             for (var i = 0; i < 256; i++)
                 dict.Add(i, ((char)i).ToString());
             return dict;
-        }
-
-        public void CompressFile(string filename, string fileOutName, out string filePath)
-        {
-            Stream ifStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            Stream ofStream = new FileStream(fileOutName, FileMode.Create, FileAccess.ReadWrite);           
-
-            var array = new byte[ifStream.Length];
-            ifStream.Read(array, 0, array.Length);
-            var entry = Encoding.Default.GetString(array);
-            var compressed = Compress(entry);
-            ofStream.Write(compressed.Select(el => (byte)el).ToArray(), 0, compressed.Length);
-            var originalL = ifStream.Length;
-            var compressedL = ofStream.Length;
-            ifStream.Close();
-            ofStream.Close();
-            
-            var coef = (double) originalL / compressedL;
-            Console.WriteLine($"Длина изначальная = {originalL}");
-            Console.WriteLine($"Длина сжатая = {compressedL}");
-            Console.WriteLine($"Коэффициент сжатия = {coef}");
-
-            filePath = fileOutName;
-        }
-
-        public void DecompressFile(string filename, string fileOutName, out string filePath)
-        {
-            Stream ifStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            Stream ofStream = new FileStream(fileOutName, FileMode.Create, FileAccess.ReadWrite);
-
-            var array = new byte[ifStream.Length];
-            ifStream.Read(array, 0, array.Length);
-            var entry = Encoding.Default.GetString(array);
-
-            var decompressed = Decompress(entry);
-            var arrayD = Encoding.Default.GetBytes(decompressed);
-            ofStream.Write(arrayD, 0, arrayD.Length);
-            ifStream.Close();
-            ofStream.Close();
-
-            filePath = fileOutName;
         }
     }
 }

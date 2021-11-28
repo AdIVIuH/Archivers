@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Archivers\Archivers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Texts\Decompressed" />
+  </ItemGroup>
+
 </Project>
