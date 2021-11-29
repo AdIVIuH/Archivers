@@ -1,9 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
-using Archivers.Huffman2;
 
-namespace Archivers.Huffman
+namespace Archivers
 {
     public class FileArchiver : IFileArchiver
     {

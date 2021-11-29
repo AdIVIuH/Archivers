@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Archivers.Huffman2
+namespace Archivers.Huffman
 {
     public class Node
     {

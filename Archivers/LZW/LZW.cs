@@ -16,7 +16,7 @@ namespace Archivers
             var dictionary = GetInitialDictionaryBySymbol();
 
             var current = string.Empty;
-            var compressed = new List<int>();
+            var compressed = new List<short>();
 
             foreach (var ch in input)
             {
@@ -26,7 +26,7 @@ namespace Archivers
                 else
                 {
                     compressed.Add(dictionary[current]);
-                    dictionary.Add(workingString, dictionary.Count);
+                    dictionary.Add(workingString, (short)dictionary.Count);
                     current = ch.ToString();
                 }
             }
@@ -62,7 +62,7 @@ namespace Archivers
                 decompressed.Append(entry);
 
                 // new sequence; add it to the dictionary
-                dict.Add(dict.Count, workingString + entry?.FirstOrDefault());
+                dict.Add((short)dict.Count, workingString + entry?.FirstOrDefault());
 
                 workingString = entry;
             }
@@ -70,16 +70,16 @@ namespace Archivers
             return decompressed.ToString();
         }
 
-        private static List<int> GetIndexies(byte[] compressed)
+        private static List<short> GetIndexies(byte[] compressed)
         {
-            var indexes = new List<int>();
+            var indexes = new List<short>();
             var buffer = new List<byte>();
             foreach (var b in compressed)
             {
                 buffer.Add(b);
-                if (buffer.Count == 4)
+                if (buffer.Count == 2)
                 {
-                    indexes.Add(BitConverter.ToInt32(buffer.ToArray(), 0));
+                    indexes.Add(BitConverter.ToInt16(buffer.ToArray(), 0));
                     buffer.Clear();
                 }
             }
@@ -87,18 +87,18 @@ namespace Archivers
             return indexes;
         }
 
-        private static Dictionary<string, int> GetInitialDictionaryBySymbol()
+        private static Dictionary<string, short> GetInitialDictionaryBySymbol()
         {
-            var dict = new Dictionary<string, int>();
-            for (var i = 0; i < 256; i++)
+            var dict = new Dictionary<string, short>();
+            for (short i = 0; i < 256; i++)
                 dict.Add(((char)i).ToString(), i);
             return dict;
         }
 
-        private static Dictionary<int, string> GetInitialDictionaryByIndex()
+        private static Dictionary<short, string> GetInitialDictionaryByIndex()
         {
-            var dict = new Dictionary<int, string>();
-            for (var i = 0; i < 256; i++)
+            var dict = new Dictionary<short, string>();
+            for (short i = 0; i < 256; i++)
                 dict.Add(i, ((char)i).ToString());
             return dict;
         }

@@ -1,4 +1,4 @@
-namespace Archivers.Huffman2
+namespace Archivers
 {
     public interface IFileArchiver
     {

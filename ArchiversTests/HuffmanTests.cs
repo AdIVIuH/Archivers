@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Archivers;
 using Archivers.Huffman;
-using Archivers.Huffman2;
 using NUnit.Framework;
 
 namespace ArchiversTests
